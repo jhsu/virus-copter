@@ -65,7 +65,7 @@ function dhcp (cb) {
         ps.on('exit', check);
     }
     
-    (function () {
+    function check () {
         getAddr(function (addr) {
             if (/^192\.168\./.test(addr)) {
                 clearTimeout(to0);
@@ -74,7 +74,8 @@ function dhcp (cb) {
             }
             else to1 = setTimeout(retry, 5000);
         });
-    })();
+    }
+    retry();
 }
 
 function getAddr (cb) {
