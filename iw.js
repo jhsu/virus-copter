@@ -1,7 +1,19 @@
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
+var EventEmitter = require('events').EventEmitter;
 
-exports.scan = function (iface, cb) {
-    var ps = spawn('iwlist', [ iface, 'scan' ]);
+module.exports = function (iface) {
+    return new IW(iface);
+};
+
+function IW (iface) {
+    this.iface = iface;
+}
+
+IW.prototype = new EventEmitter;
+
+IW.prototype.scan = function (cb) {
+    var ps = spawn('iwlist', [ this.iface, 'scan' ]);
     
     var line = '';
     ps.stdout.on('data', function ondata (buf) {
@@ -46,4 +58,26 @@ exports.scan = function (iface, cb) {
             current.encrypted = m[1] !== 'off';
         }
     }
-}
+};
+
+IW.prototype.connect = function (ap, cb) {
+    var self = this;
+    spawn('iwconfig', [ self.iface, 'essid', ap ]);
+    var iv = setInterval(function (err, stdout, stderr) {
+        exec('iwconfig ' + self.iface, function (err, stdout, stderr) {
+            var m;
+            if (m = /ESSID:"(.+)"/.exec(stdout)) {
+                if (m[1] === ap) {
+                    clearInterval(iv);
+                    clearTimeout(to);
+                    cb(null);
+                }
+            }
+        });
+    }, 1000);
+    
+    var to = setTimeout(function () {
+        clearInterval(iv);
+        cb('connection to ' + ap + ' timed out');
+    }, 20 * 1000);
+};
