@@ -42,5 +42,8 @@ exports.scan = function (iface, cb) {
         if (m = /^\s+ESSID:"(.+)"/.exec(line)) {
             current.essid = m[1];
         }
+        else if (m = /^\s+Encryption key:(.+)/.exec(line)) {
+            current.encrypted = m[1] !== 'off';
+        }
     }
 }
