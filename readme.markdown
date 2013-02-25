@@ -19,6 +19,16 @@ The payload virus.tar includes:
 `iwlist ath0 scan` doesn't seem to work on the AR drones, but this information
 is possibly available through other endpoints
 
+# Capture the wifi access points.
+
+Link the `airport` utility.
+
+```bash
+ln -s /System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport /usr/local/bin/airport
+```
+
+./capture > access_points.json
+
 # license
 
 MIT
