@@ -1,4 +1,5 @@
-var iw = require('./lib/iw')(process.argv[2] || 'ath0');
+var iface = (process.argv[2] || (process.platform === 'darwin' ? 'en0' : 'ath0'))
+var iw = require('./lib/iw')(iface);
 var net = require('net');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
