@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+rm -rf virus
+mkdir -p virus
+tar xvf virus.tar -C virus
+/* cp nodes.json untar/nodes.json */
+tar cvf eyvirus.tar virus
