@@ -5,19 +5,8 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 
-var canScan = process.argv[3] === 'scan';
-
 function attack () {
-    if (canScan) {
-        iw.scan(function (err, nodes) {
-            if (err) return console.error(err)
-            fs.writeFileSync(__dirname + '/nodes.json', JSON.stringify(nodes));
-            withNodes(nodes);
-        });
-    }
-    else {
-        withNodes(require('./nodes.json'));
-    }
+    withNodes(require('./nodes.json'));
 
     function withNodes (nodes) {
         var open = nodes.filter(function (node) {
