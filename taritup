@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 
+./capture
 rm -rf virus
 mkdir -p virus
 tar xvf virus.tar -C virus
-/* cp nodes.json untar/nodes.json */
+cp nodes.json virus/nodes.json
+cp *.js virus/
 tar cvf eyvirus.tar virus
+rm -rf virus
