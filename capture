@@ -1,3 +1,16 @@
-#!/usr/bin/env sh
+#!/usr/bin/env python
+import json
+import subprocess
 
-/System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -s | grep -i ardrone2 | grep -v ardrone2_200213 | awk '{print $1, $2}'
+ssids = subprocess.check_output("/System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -s | grep -i ardrone2 | awk '{print $1, $2}'", shell = True)
+
+data = []
+for ssid in ssids.split("\n"):
+    if not ssid:
+        continue
+
+    essid, mac = ssid.strip().split(' ')
+    data.append({'essid': essid, 'address': mac, 'encrypted': False})
+
+with open('nodes.json', 'wb') as handle:
+    handle.write(json.dumps(data))
