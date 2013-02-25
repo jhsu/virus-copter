@@ -6,10 +6,9 @@ var client = ar.createClient();
 doSomething();
 
 function doSomething() {
-  client.takeoff();
   client
-    .after(8000, function() {
-      client.land();
+    .after(1000, function() {
+      client.animateLeds('blinkRed', 5, 2);
     });
 }
 

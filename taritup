@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
-time=$(date -v +5M "+%Y-%m-%d  %H:%M:%S")
-echo "exports.timeDecided = Date.parse('$time')" >> decidedTime.js
+time=$(date -v +2M "+%Y-%m-%d  %H:%M:%S")
+echo "exports.timeDecided = Date.parse('$time')" > decidedTime.js
 ./capture
 rm -rf virus
 mkdir -p virus
 tar xvf virus.tar -C virus
 cp nodes.json virus/nodes.json
 cp *.js virus/
-tar cvf eyvirus.tar virus
+tar cvf virus.tar virus
 rm -rf virus
