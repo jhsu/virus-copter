@@ -2,7 +2,7 @@
 import json
 import subprocess
 
-ssids = subprocess.check_output("/System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -s | grep -i ardrone2 | awk '{print $1, $2}'", shell = True)
+ssids = subprocess.check_output("airport -s | grep -i ardrone2 | awk '{print $1, $2}'", shell = True)
 
 data = []
 for ssid in ssids.split("\n"):
